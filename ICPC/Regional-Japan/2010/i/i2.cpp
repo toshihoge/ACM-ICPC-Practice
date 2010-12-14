@@ -179,6 +179,6 @@ int main(void) {
       cin >> x >> z;
       xzs.push_back(make_pair(x, z));
     }
-    printf("%.10f\n", solve(xys, xzs));
+    printf("%.4f\n", solve(xys, xzs));
   }
 }
