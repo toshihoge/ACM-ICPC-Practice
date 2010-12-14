@@ -148,9 +148,6 @@ bool isOnYZPlain(const P3S &points) {
 }
 
 double calculateArea(const P3 &innerPoint, const P3S &pointsOnFace) {
-  if (pointsOnFace.size() < 3) {
-    return 0.0;
-  }
   P3S points = moveInnerPointToO(innerPoint, pointsOnFace);
   
   P3S_IT it = points.begin();
@@ -201,10 +198,12 @@ pair<P3SS, P3SS> splitOnYZPlainAndNot(const P3SS &pointsSets) {
   P3SS onYZPlain;
   P3SS notOnYZPlain;
   for (P3SS_CIT it = pointsSets.begin(); it != pointsSets.end(); it++) {
-    if (isOnYZPlain(*it)) {
-      onYZPlain.push_back(*it);
-    } else {
-      notOnYZPlain.push_back(*it);
+    if (it->size() >= 3) {
+      if (isOnYZPlain(*it)) {
+        onYZPlain.push_back(*it);
+      } else {
+        notOnYZPlain.push_back(*it);
+      }
     }
   }
   return make_pair(onYZPlain, notOnYZPlain);
