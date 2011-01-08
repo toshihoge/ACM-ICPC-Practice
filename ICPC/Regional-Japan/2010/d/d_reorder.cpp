@@ -74,8 +74,8 @@ int gaussianElimination(MTRX &matrix) {
       if (nonNegativeIndex != i) {
         swap(matrix[i], matrix[nonNegativeIndex]);
       }
-      for (int k = 0; k < matrix.size(); k++) {
-        if (k != i && matrix[k][j] == 1) {
+      for (int k = i+1; k < matrix.size(); k++) {
+        if (matrix[k][j] == 1) {
           addRow(k, i, matrix);
         }
       }
