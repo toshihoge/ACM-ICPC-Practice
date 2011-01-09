@@ -30,24 +30,32 @@ class Token {
   }
 }
 
-class MatrixBody {
+class Matrix {
   private final static int MOD = 32768;
   
+  int begin;
   int h;
   int w;
   long[][] matrix;
   
-  public MatrixBody(long v) {
-    this.h = 1;
-    this.w = 1;
+  public Matrix(long v) {
+    begin = 0;
+    h = 1;
+    w = 1;
     matrix = new long[1][1];
     matrix[0][0] = v;
   }
   
-  public MatrixBody(int h, int w) {
+  public Matrix(int h, int w) {
+    begin = 0;
     this.h = h;
     this.w = w;
     matrix = new long[this.h][this.w];
+  }
+  
+  public Matrix setBegin(int b) {
+    begin = b;
+    return this;
   }
   
   private static long normalize(long n) {
@@ -61,7 +69,7 @@ class MatrixBody {
     return h == 1 && w == 1;
   }
   
-  public static MatrixBody add(MatrixBody mb1, MatrixBody mb2) {
+  public static Matrix add(Matrix mb1, Matrix mb2) {
     if (mb1.isScale()) {
       return addScale(mb2, mb1.matrix[0][0]);
     } else if (mb2.isScale()) {
@@ -71,9 +79,9 @@ class MatrixBody {
     }
   }
   
-  private static MatrixBody addSameSize(MatrixBody mb1, MatrixBody mb2) {
+  private static Matrix addSameSize(Matrix mb1, Matrix mb2) {
     if (mb1.h == mb2.h && mb1.w == mb2.w) {
-      MatrixBody output = new MatrixBody(mb1.h, mb1.w);
+      Matrix output = new Matrix(mb1.h, mb1.w);
       for (int i = 0; i < mb1.h; i++) {
         for (int j = 0; j < mb1.w; j++) {
           output.matrix[i][j] = normalize(mb1.matrix[i][j] + mb2.matrix[i][j]);
@@ -85,8 +93,8 @@ class MatrixBody {
     }
   }
   
-  private static MatrixBody addScale(MatrixBody mb, long scale) {
-    MatrixBody output = new MatrixBody(mb.h, mb.w);
+  private static Matrix addScale(Matrix mb, long scale) {
+    Matrix output = new Matrix(mb.h, mb.w);
     for (int i = 0; i < mb.h; i++) {
       for (int j = 0; j < mb.w; j++) {
         output.matrix[i][j] = normalize(mb.matrix[i][j] + scale);
@@ -95,7 +103,7 @@ class MatrixBody {
     return output;
   }
   
-  public static MatrixBody sub(MatrixBody mb1, MatrixBody mb2) {
+  public static Matrix sub(Matrix mb1, Matrix mb2) {
     if (mb1.isScale()) {
       return multiplyScale(addScale(mb2, -mb1.matrix[0][0]), -1);
     } else if (mb2.isScale()) {
@@ -105,9 +113,9 @@ class MatrixBody {
     }
   }
   
-  private static MatrixBody multiplyMatrix(MatrixBody mb1, MatrixBody mb2) {
+  private static Matrix multiplyMatrix(Matrix mb1, Matrix mb2) {
     if (mb1.w == mb2.h) {
-      MatrixBody output = new MatrixBody(mb1.h, mb2.w);
+      Matrix output = new Matrix(mb1.h, mb2.w);
       for (int i = 0; i < mb1.h; i++) {
         for (int j = 0; j < mb2.w; j++) {
           long sum = 0;
@@ -123,7 +131,7 @@ class MatrixBody {
     }
   }
   
-  public static MatrixBody mul(MatrixBody mb1, MatrixBody mb2) {
+  public static Matrix mul(Matrix mb1, Matrix mb2) {
     if (mb1.isScale()) {
       return multiplyScale(mb2, mb1.matrix[0][0]);
     } else if (mb2.isScale()) {
@@ -133,12 +141,12 @@ class MatrixBody {
     }
   }
   
-  public static MatrixBody negate(MatrixBody mb) {
+  public static Matrix negate(Matrix mb) {
     return multiplyScale(mb, -1);
   }
   
-  private static MatrixBody multiplyScale(MatrixBody mb, long scale) {
-    MatrixBody output = new MatrixBody(mb.h, mb.w);
+  private static Matrix multiplyScale(Matrix mb, long scale) {
+    Matrix output = new Matrix(mb.h, mb.w);
     for (int i = 0; i < mb.h; i++) {
       for (int j = 0; j < mb.w; j++) {
         output.matrix[i][j] = normalize(mb.matrix[i][j] * scale);
@@ -147,8 +155,8 @@ class MatrixBody {
     return output;
   }
   
-  public static MatrixBody transpose(MatrixBody mb) {
-    MatrixBody output = new MatrixBody(mb.w, mb.h);
+  public static Matrix transpose(Matrix mb) {
+    Matrix output = new Matrix(mb.w, mb.h);
     for (int i = 0; i < mb.h; i++) {
       for (int j = 0; j < mb.w; j++) {
         output.matrix[j][i] = mb.matrix[i][j];
@@ -157,9 +165,9 @@ class MatrixBody {
     return output;
   }
   
-  public static MatrixBody indexedPrimary(MatrixBody mb1, MatrixBody mb2, MatrixBody mb3) {
+  public static Matrix indexedPrimary(Matrix mb1, Matrix mb2, Matrix mb3) {
     if (mb2.h == 1 && mb3.h == 1) {
-      MatrixBody output = new MatrixBody(mb2.w, mb3.w);
+      Matrix output = new Matrix(mb2.w, mb3.w);
       for (int i = 0; i < mb2.w; i++) {
         for (int j = 0; j < mb3.w; j++) {
           output.matrix[i][j] = mb1.matrix[(int)mb2.matrix[0][i]-1][(int)mb3.matrix[0][j]-1];
@@ -171,9 +179,9 @@ class MatrixBody {
     }
   }
   
-  public static MatrixBody concatenateRowSequence(MatrixBody mb1, MatrixBody mb2) {
+  public static Matrix concatenateRowSequence(Matrix mb1, Matrix mb2) {
     if (mb1.w == mb2.w) {
-      MatrixBody output = new MatrixBody(mb1.h+mb2.h, mb1.w);
+      Matrix output = new Matrix(mb1.h+mb2.h, mb1.w);
       for (int i = 0; i < mb1.h; i++) {
         for (int j = 0; j < mb1.w; j++) {
           output.matrix[i][j] = mb1.matrix[i][j];
@@ -190,9 +198,9 @@ class MatrixBody {
     }
   }
   
-  public static MatrixBody concatenateRow(MatrixBody mb1, MatrixBody mb2) {
+  public static Matrix concatenateRow(Matrix mb1, Matrix mb2) {
     if (mb1.h == mb2.h) {
-      MatrixBody output = new MatrixBody(mb1.h, mb1.w + mb2.w);
+      Matrix output = new Matrix(mb1.h, mb1.w + mb2.w);
       for (int i = 0; i < mb1.h; i++) {
         for (int j = 0; j < mb1.w; j++) {
           output.matrix[i][j] = mb1.matrix[i][j];
@@ -219,16 +227,6 @@ class MatrixBody {
   }
 }
 
-class Matrix {
-  int begin;
-  MatrixBody mb;
-  
-  Matrix (int begin, MatrixBody mb) {
-    this.begin = begin;
-    this.mb = mb;
-  }
-}
-
 class Parser {
   Matrix[] environment;
   ArrayList<Token> tokens;
@@ -246,13 +244,13 @@ class Parser {
     if (getTokenType(term.begin-1) == Token.PLUS) {
       Matrix expr = parseExpr(term.begin-2);
       if (expr != null) {
-        return new Matrix(expr.begin, MatrixBody.add(expr.mb, term.mb));
+        return Matrix.add(expr, term).setBegin(expr.begin);
       }
     }
     if (getTokenType(term.begin-1) == Token.MINUS) {
       Matrix expr = parseExpr(term.begin-2);
       if (expr != null) {
-        return new Matrix(expr.begin, MatrixBody.sub(expr.mb, term.mb));
+        return Matrix.sub(expr, term).setBegin(expr.begin);
       }
     }
     return term;
@@ -267,7 +265,7 @@ class Parser {
     if (getTokenType(factor.begin-1) == Token.MULTIPLY) {
       Matrix term = parseTerm(factor.begin-2);
       if (term != null) {
-        return new Matrix(term.begin, MatrixBody.mul(term.mb, factor.mb));
+        return Matrix.mul(term, factor).setBegin(term.begin);
       }
     }
     return factor;
@@ -279,7 +277,7 @@ class Parser {
       return null;
     }
     if (getTokenType(primary.begin-1) == Token.NEGATE) {
-      return new Matrix(primary.begin-1, MatrixBody.negate(primary.mb));
+      return Matrix.negate(primary).setBegin(primary.begin-1);
     } else {
       return primary;
     }
@@ -293,7 +291,7 @@ class Parser {
         if (exprFront != null && getTokenType(exprFront.begin-1) == Token.OPENCASEARC) {
           Matrix primary = parsePrimary(exprFront.begin - 2);
           if (primary != null) {
-            return new Matrix(primary.begin, MatrixBody.indexedPrimary(primary.mb, exprFront.mb, expr.mb));
+            return Matrix.indexedPrimary(primary, exprFront, expr).setBegin(primary.begin);
           }
         }
       }
@@ -305,7 +303,7 @@ class Parser {
     if (getTokenType(e) == Token.CLOSECASEARC) {
       Matrix expr = parseExpr(e-1);
       if (expr != null && getTokenType(expr.begin-1) == Token.OPENCASEARC) {
-        return new Matrix(expr.begin - 1, expr.mb);
+        return expr.setBegin(expr.begin-1);
       }
     }
     return null;
@@ -315,7 +313,7 @@ class Parser {
     if (getTokenType(e) == Token.TRANSPOSE) {
       Matrix primary = parsePrimary(e-1);
       if (primary != null) {
-        return new Matrix(primary.begin, MatrixBody.transpose(primary.mb));
+        return Matrix.transpose(primary).setBegin(primary.begin);
       }
     }
     return null;
@@ -340,7 +338,7 @@ class Parser {
     if (getTokenType(e) == Token.CLOSEBRACKET) {
       Matrix rowSequence = parseRowSequence(e-1);
       if (rowSequence != null && getTokenType(rowSequence.begin-1) == Token.OPENBRACKET) {
-        return new Matrix(rowSequence.begin-1, rowSequence.mb);
+        return rowSequence.setBegin(rowSequence.begin-1);
       }
     }
     return null;
@@ -355,7 +353,7 @@ class Parser {
     if (getTokenType(row.begin-1) == Token.SEMICOLON) {
       Matrix rowSequence = parseRowSequence(row.begin-2);
       if (rowSequence != null) {
-        return new Matrix(rowSequence.begin, MatrixBody.concatenateRowSequence(rowSequence.mb, row.mb));
+        return Matrix.concatenateRowSequence(rowSequence, row).setBegin(rowSequence.begin);
       }
     }
     return row;
@@ -369,7 +367,7 @@ class Parser {
     if(getTokenType(expr.begin-1) == Token.SPACE) {
       Matrix row = parseRow(expr.begin-2);
       if (row != null) {
-        return new Matrix(row.begin, MatrixBody.concatenateRow(row.mb, expr.mb));
+        return Matrix.concatenateRow(row, expr).setBegin(row.begin);
       }
     }
     return expr;
@@ -377,14 +375,14 @@ class Parser {
   
   private Matrix parseNumber(int e) {
     if (getTokenType(e) == Token.NUMBER) {
-      return new Matrix(e, new MatrixBody(tokens.get(e).number));
+      return new Matrix(tokens.get(e).number).setBegin(e);
     }
     return null;
   }
   
   private Matrix parseVar(int e) {
     if (getTokenType(e) == Token.VAR) {
-      return new Matrix(e, environment[tokens.get(e).number].mb);
+      return environment[tokens.get(e).number].setBegin(e);
     }
     return null;
   }
@@ -478,7 +476,7 @@ public class Main {
       String rightPart = line.substring(2);
       Parser parser = new Parser(results);
       results[line.charAt(0) - 'A'] = parser.parse(rightPart);
-      results[line.charAt(0) - 'A'].mb.print();
+      results[line.charAt(0) - 'A'].print();
     }
     System.out.print("-----\n");
   }
