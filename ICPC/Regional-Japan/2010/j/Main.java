@@ -15,12 +15,13 @@ class Token {
   public final static char SEMICOLON = ';';
   public final static char NUMBER = 'n';
   public final static char VAR = 'v';
+  public final static char NULL = '#';
   
-  char Token;
+  char type;
   int number;
   
   Token(char t, int n) {
-    Token = t;
+    type = t;
     number = n;
   }
   
@@ -242,18 +243,16 @@ class Parser {
       return null;
     }
     
-    if (term.begin-1 >= 0) {
-      if (tokens.get(term.begin-1).Token == Token.PLUS) {
-        Matrix expr = parseExpr(term.begin-2);
-        if (expr != null) {
-          return new Matrix(expr.begin, MatrixBody.add(expr.mb, term.mb));
-        }
+    if (getTokenType(term.begin-1) == Token.PLUS) {
+      Matrix expr = parseExpr(term.begin-2);
+      if (expr != null) {
+        return new Matrix(expr.begin, MatrixBody.add(expr.mb, term.mb));
       }
-      if (tokens.get(term.begin-1).Token == Token.MINUS) {
-        Matrix expr = parseExpr(term.begin-2);
-        if (expr != null) {
-          return new Matrix(expr.begin, MatrixBody.sub(expr.mb, term.mb));
-        }
+    }
+    if (getTokenType(term.begin-1) == Token.MINUS) {
+      Matrix expr = parseExpr(term.begin-2);
+      if (expr != null) {
+        return new Matrix(expr.begin, MatrixBody.sub(expr.mb, term.mb));
       }
     }
     return term;
@@ -265,7 +264,7 @@ class Parser {
       return null;
     }
     
-    if (factor.begin-1 >= 0 && tokens.get(factor.begin-1).Token == Token.MULTIPLY) {
+    if (getTokenType(factor.begin-1) == Token.MULTIPLY) {
       Matrix term = parseTerm(factor.begin-2);
       if (term != null) {
         return new Matrix(term.begin, MatrixBody.mul(term.mb, factor.mb));
@@ -279,7 +278,7 @@ class Parser {
     if (primary == null) {
       return null;
     }
-    if (primary.begin-1 >= 0 && tokens.get(primary.begin-1).Token == Token.NEGATE) {
+    if (getTokenType(primary.begin-1) == Token.NEGATE) {
       return new Matrix(primary.begin-1, MatrixBody.negate(primary.mb));
     } else {
       return primary;
@@ -287,11 +286,11 @@ class Parser {
   }
   
   private Matrix parseIndexedPrimary(int e) {
-    if (tokens.get(e).Token == Token.CLOSECASEARC) {
+    if (getTokenType(e) == Token.CLOSECASEARC) {
       Matrix expr = parseExpr(e-1);
-      if (expr != null && expr.begin-1 >= 0 && tokens.get(expr.begin - 1).Token == Token.COMMA) {
+      if (expr != null && getTokenType(expr.begin-1) == Token.COMMA) {
         Matrix exprFront = parseExpr(expr.begin - 2);
-        if (exprFront != null && exprFront.begin-1 >= 0 && tokens.get(exprFront.begin - 1).Token == Token.OPENCASEARC) {
+        if (exprFront != null && getTokenType(exprFront.begin-1) == Token.OPENCASEARC) {
           Matrix primary = parsePrimary(exprFront.begin - 2);
           if (primary != null) {
             return new Matrix(primary.begin, MatrixBody.indexedPrimary(primary.mb, exprFront.mb, expr.mb));
@@ -303,9 +302,9 @@ class Parser {
   }
   
   private Matrix parseCaseArcBlock(int e) {
-    if (tokens.get(e).Token == Token.CLOSECASEARC) {
+    if (getTokenType(e) == Token.CLOSECASEARC) {
       Matrix expr = parseExpr(e-1);
-      if (expr != null && expr.begin-1 >= 0 && tokens.get(expr.begin - 1).Token == Token.OPENCASEARC) {
+      if (expr != null && getTokenType(expr.begin-1) == Token.OPENCASEARC) {
         return new Matrix(expr.begin - 1, expr.mb);
       }
     }
@@ -313,7 +312,7 @@ class Parser {
   }
       
   private Matrix parseTranspose(int e) {
-    if (tokens.get(e).Token == Token.TRANSPOSE) {
+    if (getTokenType(e) == Token.TRANSPOSE) {
       Matrix primary = parsePrimary(e-1);
       if (primary != null) {
         return new Matrix(primary.begin, MatrixBody.transpose(primary.mb));
@@ -338,9 +337,9 @@ class Parser {
   }
   
   private Matrix parseMatrix(int e) {
-    if (tokens.get(e).Token == Token.CLOSEBRACKET) {
+    if (getTokenType(e) == Token.CLOSEBRACKET) {
       Matrix rowSequence = parseRowSequence(e-1);
-      if (rowSequence != null && rowSequence.begin-1 >= 0 && tokens.get(rowSequence.begin-1).Token == Token.OPENBRACKET) {
+      if (rowSequence != null && getTokenType(rowSequence.begin-1) == Token.OPENBRACKET) {
         return new Matrix(rowSequence.begin-1, rowSequence.mb);
       }
     }
@@ -353,7 +352,7 @@ class Parser {
       return null;
     }
     
-    if (row.begin-1 >= 0 && tokens.get(row.begin-1).Token == Token.SEMICOLON) {
+    if (getTokenType(row.begin-1) == Token.SEMICOLON) {
       Matrix rowSequence = parseRowSequence(row.begin-2);
       if (rowSequence != null) {
         return new Matrix(rowSequence.begin, MatrixBody.concatenateRowSequence(rowSequence.mb, row.mb));
@@ -367,7 +366,7 @@ class Parser {
     if (expr == null) {
       return null;
     }
-    if(expr.begin-1 >= 0 && tokens.get(expr.begin-1).Token == Token.SPACE) {
+    if(getTokenType(expr.begin-1) == Token.SPACE) {
       Matrix row = parseRow(expr.begin-2);
       if (row != null) {
         return new Matrix(row.begin, MatrixBody.concatenateRow(row.mb, expr.mb));
@@ -377,17 +376,22 @@ class Parser {
   }
   
   private Matrix parseNumber(int e) {
-    if (tokens.get(e).Token == Token.NUMBER) {
+    if (getTokenType(e) == Token.NUMBER) {
       return new Matrix(e, new MatrixBody(tokens.get(e).number));
     }
     return null;
   }
   
   private Matrix parseVar(int e) {
-    if (tokens.get(e).Token == Token.VAR) {
+    if (getTokenType(e) == Token.VAR) {
       return new Matrix(e, environment[tokens.get(e).number].mb);
     }
     return null;
+  }
+  
+  private char getTokenType(int index) {
+    if (index < 0) return Token.NULL;
+    return tokens.get(index).type;
   }
   
   private static ArrayList<Token> lex(String line) {
