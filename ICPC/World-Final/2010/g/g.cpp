@@ -95,7 +95,6 @@ double calculateMaxArea(int begin, int end, int maxIndex) {
   }
   bool flipMaxIndex =
       isRTooLarge(0.5*lengths[maxIndex], begin, end, maxIndex, false);
-  double r = findR(begin, end, maxIndex, flipMaxIndex);
   return calculateArea(findR(begin, end, maxIndex, flipMaxIndex),
       begin, end, maxIndex, flipMaxIndex);
 }
