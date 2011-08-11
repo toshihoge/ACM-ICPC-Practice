@@ -12,7 +12,6 @@ typedef pair<cd, cd> segment;
 typedef vector<cd> vcd;
 typedef vcd polygon;
 
-#define EPS 1e-6
 #define INF 1e+6
 
 cd readCd() {
@@ -30,11 +29,11 @@ polygon readPolygon(int n) {
 }
 
 double distanceNoAbs(const cd &p, const segment &s) {
-  return imag((p - s.second) / (s.second - s.first) * abs(s.second - s.first));
+  return imag((p - s.second) /
+      (s.second - s.first) * abs(s.second - s.first));
 }
 
-pair<double, double> getPositiveAndNegativeDistance(
-    const polygon &p, const segment &s) {
+double getWidth(const polygon &p, const segment &s) {
   double positiveDistance = 0.0;
   double negativeDistance = 0.0;
   
@@ -43,19 +42,7 @@ pair<double, double> getPositiveAndNegativeDistance(
     positiveDistance = max(positiveDistance, distance);
     negativeDistance = min(negativeDistance, distance);
   }
-  return make_pair(positiveDistance, negativeDistance);
-}
-
-double getWidth(const polygon &p, const cd &p1, const cd &p2) {
-  pair<double, double> pn =
-      getPositiveAndNegativeDistance(p, make_pair(p1, p2));
-  if (fabs(pn.first) < EPS) {
-    return fabs(pn.second);
-  }
-  if (fabs(pn.second) < EPS) {
-    return fabs(pn.first);
-  }
-  return INF;
+  return positiveDistance - negativeDistance;
 }
 
 double myceil(double d) {
@@ -66,7 +53,7 @@ double solve(const polygon &p) {
   double output = INF;
   for (int i = 0; i < (int)p.size(); i++) {
     for (int j = i+1; j < (int)p.size(); j++) {
-      output = min(output, getWidth(p, p[i], p[j]));
+      output = min(output, getWidth(p, make_pair(p[i], p[j])));
     }
   }
   return myceil(output);
