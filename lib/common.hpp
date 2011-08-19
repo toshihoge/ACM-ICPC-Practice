@@ -1,5 +1,6 @@
 #include<cmath>
 #include<complex>
+#include<cstdio>
 #include<iostream>
 #include<vector>
 
