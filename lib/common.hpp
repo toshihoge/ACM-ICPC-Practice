@@ -1,8 +1,11 @@
 #include<cmath>
+#include<complex>
 #include<iostream>
 #include<vector>
 
 using namespace std;
+
+typedef complex<double> cd;
 
 typedef vector<int> vi;
 
