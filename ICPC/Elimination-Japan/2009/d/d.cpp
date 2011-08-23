@@ -121,3 +121,4 @@ int main(void) {
     cout << solve(s, g, distances, limitations) << endl;
   }
 }
+
