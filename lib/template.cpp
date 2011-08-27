@@ -14,11 +14,11 @@
 
 using namespace std;
 
-typedef pair<int, int> pii;
-typedef complex<double> cd;
-typedef vector<int> vi;
-typedef vector<vi> vvi;
-typedef vector<double> vd;
+typedef pair<int, int> Pii;
+typedef complex<double> Cd;
+typedef vector<int> Vi;
+typedef vector<Vi> Vvi;
+typedef vector<double> Vd;
 
 #define DL cerr<<"Debug: "<<__LINE__<<endl
 #define DUMP(x) cerr<<#x<<" = "<<(x)<<" (@"<<__LINE__<<")"<<endl
