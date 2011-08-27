@@ -6,25 +6,8 @@ using namespace std;
 
 typedef vector<vector<int> > vvi;
 typedef pair<int, int> pii;
-typedef struct {
-  int mini;
-  int minj;
-  int maxi;
-  int maxj;
-} area;
+typedef unsigned int area;
 typedef map<area, pii> cache;
-
-bool operator< (const area &a1, const area &a2) {
-  if (a1.mini != a2.mini) {
-    return a1.mini < a2.mini;
-  } else if (a1.minj != a2.minj) {
-    return a1.minj < a2.minj;
-  } else if (a1.maxi != a2.maxi) {
-    return a1.maxi < a2.maxi;
-  } else {
-    return a1.maxj < a2.maxj;
-  } 
-}
 
 vvi makeSumTable(const vvi &input) {
   vvi sumTable(input.size() + 1);
@@ -41,9 +24,34 @@ vvi makeSumTable(const vvi &input) {
   return sumTable;
 }
 
+#define MASK 0x3F
+int getMaxI(const area &a) {
+  return a & MASK; 
+}
+
+int getMaxJ(const area &a) {
+  return (a >> 6) & MASK;
+}
+
+int getMinI(const area &a) {
+  return (a >> 12) & MASK;
+}
+
+int getMinJ(const area &a) {
+  return (a >> 18) & MASK;
+}
+
+area makeArea(int mini, int minj, int maxi, int maxj) {
+  return (minj << 18) | (mini << 12) | (maxj << 6) | maxi;
+}
+
 int getSum(const area& a, const vvi &sumTable) {
-  return sumTable[a.maxi][a.maxj] - sumTable[a.maxi][a.minj] -
-      sumTable[a.mini][a.maxj] + sumTable[a.mini][a.minj];
+  int maxi = getMaxI(a);
+  int maxj = getMaxJ(a);
+  int mini = getMinI(a);
+  int minj = getMinJ(a);
+  return sumTable[maxi][maxj] - sumTable[maxi][minj] -
+      sumTable[mini][maxj] + sumTable[mini][minj];
 }
 
 pii merge(const pii &p1, const pii &p2) {
@@ -51,15 +59,6 @@ pii merge(const pii &p1, const pii &p2) {
     return make_pair(0, 0);
   }
   return make_pair(p1.first + p2.first, min(p1.second, p2.second));
-}
-
-area makeArea(int mini, int minj, int maxi, int maxj) {
-  area a;
-  a.mini = mini;
-  a.minj = minj;
-  a.maxi = maxi;
-  a.maxj = maxj;
-  return a;
 }
 
 pii solveDfsWithMemo(const area& a, const vvi &sumTable, cache &c, int bound) {
@@ -72,21 +71,25 @@ pii solveDfsWithMemo(const area& a, const vvi &sumTable, cache &c, int bound) {
     return make_pair(0, 0);
   }
   pii output = make_pair(1, getSum(a, sumTable));
-  for (int i = a.mini+1; i < a.maxi; i++) {
+  int mini = getMinI(a);
+  int minj = getMinJ(a);
+  int maxi = getMaxI(a);
+  int maxj = getMaxJ(a);
+  for (int i = mini+1; i < maxi; i++) {
     pii temp = merge(
-        solveDfsWithMemo(makeArea(a.mini, a.minj, i, a.maxj),
+        solveDfsWithMemo(makeArea(mini, minj, i, maxj),
             sumTable, c, bound),
-        solveDfsWithMemo(makeArea(i, a.minj, a.maxi, a.maxj),
+        solveDfsWithMemo(makeArea(i, minj, maxi, maxj),
             sumTable, c, bound));
     if (output < temp) {
       output = temp;
     }
   }
-  for (int j = a.minj+1; j < a.maxj; j++) {
+  for (int j = minj+1; j < maxj; j++) {
     pii temp = merge(
-        solveDfsWithMemo(makeArea(a.mini, a.minj, a.maxi, j),
+        solveDfsWithMemo(makeArea(mini, minj, maxi, j),
             sumTable, c, bound),
-        solveDfsWithMemo(makeArea(a.mini, j, a.maxi, a.maxj),
+        solveDfsWithMemo(makeArea(mini, j, maxi, maxj),
             sumTable, c, bound));
     if (output < temp) {
       output = temp;
