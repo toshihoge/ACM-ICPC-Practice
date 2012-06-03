@@ -1,3 +1,5 @@
+// Written after the contest.
+
 import java.util.*;
 public class GreedyTravelingSalesman {
   int n;
