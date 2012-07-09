@@ -1,51 +1,52 @@
 import java.util.*;
 
 class MaximumBipartiteMatchingSolver {
-  private static boolean dfs(int index, HashSet<Integer>  visited,
-      HashMap<Integer, HashSet<Integer> > matrix) {
-    if (index == -2) {
+  boolean[][] matrix;
+  int n;
+  private boolean dfs(int index, boolean[] visit) {
+    if (index == n-1) {
       return true;
     }
-    visited.add(index);
-    for (int next : matrix.get(index)) {
-      if (visited.contains(next)) {
+    visit[index] = true;
+    for (int i = 0; i < n; i++) {
+      if (!matrix[index][i] || visit[i]) {
         continue;
       }
-      if (dfs(next, visited, matrix)) {
-        matrix.get(index).remove(next);
-        matrix.get(next).add(index);
+      if (dfs(i, visit)) {
+        matrix[index][i] = false;
+        matrix[i][index] = true;
         return true;
       }
     }
     return false;
   }
 
-  // All elements must be positive and less than 1<<15
-  public static int solve(
-      ArrayList<Integer> srcs, ArrayList<Integer> dststemp) {
-    ArrayList<Integer> dsts = new ArrayList<Integer>();
-    for (int i: dststemp) {
-      dsts.add((i+1) << 15);
+  private int maximumElement(ArrayList<Integer> elements) {
+    int maximum = 0;
+    for (int e: elements) {
+      maximum = Math.max(maximum, e);
     }
+    return maximum;
+  }
 
-    HashMap<Integer, HashSet<Integer> > matrix =
-        new HashMap<Integer, HashSet<Integer> >();
-    matrix.put(-1, new HashSet<Integer>());
-    for (int i: srcs) {
-      matrix.get(-1).add(i);
-      matrix.put(i, new HashSet<Integer>());
+  public int solve(
+      ArrayList<Integer> srcs, ArrayList<Integer> dsts) {
+    int maxSrc = maximumElement(srcs) + 1;
+    int maxDst = maximumElement(dsts) + 1;
+    n = maxSrc + maxDst + 2;
+    matrix = new boolean[n][n];
+    for (int i = 0; i < maxSrc; i++) {
+      matrix[n-2][i] = true;
     }
-    matrix.put(-2, new HashSet<Integer>());
-    for (int i: dsts) {
-      matrix.put(i, new HashSet<Integer>());
-      matrix.get(i).add(-2);
+    for (int i = 0; i < maxDst; i++) {
+      matrix[i + maxSrc][n-1] = true;
     }
     for (int i = 0; i < srcs.size(); i++) {
-      matrix.get(srcs.get(i)).add(dsts.get(i));
+      matrix[srcs.get(i)][dsts.get(i) + maxSrc] = true;
     }
 
     int maching = 0;
-    while (dfs(-1, new HashSet<Integer>(), matrix)) {
+    while (dfs(n-2, new boolean[n])) {
       maching++;
     }
     return maching;
