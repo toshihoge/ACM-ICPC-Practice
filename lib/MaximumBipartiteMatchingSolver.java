@@ -1,54 +1,70 @@
 import java.util.*;
 
+/**
+ * Usage:
+ *  MaximumBipartiteMatchingSolver solver =
+ *      new MaximumBipartiteMatchingSolver();
+ *
+ *  solver.addEdege(srcIndex, dstIndex);  // Each edge
+ *
+ *  int maximumNumber = solver.solve();
+ *
+ * Verified:
+ *  AOJ1185 
+ */
 class MaximumBipartiteMatchingSolver {
-  boolean[][] matrix;
-  int n;
-  private boolean dfs(int index, boolean[] visit) {
-    if (index == n-1) {
+  private int maxSrc;
+  private int maxDst;
+  private HashSet<Integer> edges;
+
+  public MaximumBipartiteMatchingSolver() {
+    maxSrc = 1;
+    maxDst = 1;
+    edges = new HashSet<Integer>();
+  }
+
+  private int makeEdge(int src, int dst) {
+    return (src << 16) | dst;
+  }
+
+  public void addEdge(int src, int dst) {
+    maxSrc = Math.max(maxSrc, src+1);
+    maxDst = Math.max(maxDst, dst+1);
+    edges.add(makeEdge(src, dst));
+  }
+
+  private boolean containEdge(int src, int dst) {
+    return edges.contains(makeEdge(src, dst));
+  }
+
+  private boolean dfs(int srcIndex, int[] prev, boolean[] visit) {
+    if (srcIndex < 0) {
       return true;
     }
-    visit[index] = true;
-    for (int i = 0; i < n; i++) {
-      if (!matrix[index][i] || visit[i]) {
+    for (int i = 0; i < maxDst; i++) {
+      if (visit[i] || !containEdge(srcIndex, i)) {
         continue;
       }
-      if (dfs(i, visit)) {
-        matrix[index][i] = false;
-        matrix[i][index] = true;
+      visit[i] = true;
+      if (dfs(prev[i], prev, visit)) {
+        prev[i] = srcIndex;
         return true;
       }
     }
     return false;
   }
 
-  private int maximumElement(ArrayList<Integer> elements) {
-    int maximum = 0;
-    for (int e: elements) {
-      maximum = Math.max(maximum, e);
-    }
-    return maximum;
-  }
-
-  public int solve(
-      ArrayList<Integer> srcs, ArrayList<Integer> dsts) {
-    int maxSrc = maximumElement(srcs) + 1;
-    int maxDst = maximumElement(dsts) + 1;
-    n = maxSrc + maxDst + 2;
-    matrix = new boolean[n][n];
+  public int solve() {
+    int count = 0;
+    int[] prev = new int[maxDst];
+    boolean[] visit = new boolean[maxDst];
+    Arrays.fill(prev, -1);
     for (int i = 0; i < maxSrc; i++) {
-      matrix[n-2][i] = true;
+      Arrays.fill(visit, false);
+      if (dfs(i, prev, visit)) {
+        count++;
+      }
     }
-    for (int i = 0; i < maxDst; i++) {
-      matrix[i + maxSrc][n-1] = true;
-    }
-    for (int i = 0; i < srcs.size(); i++) {
-      matrix[srcs.get(i)][dsts.get(i) + maxSrc] = true;
-    }
-
-    int maching = 0;
-    while (dfs(n-2, new boolean[n])) {
-      maching++;
-    }
-    return maching;
+    return count;
   }
 }
