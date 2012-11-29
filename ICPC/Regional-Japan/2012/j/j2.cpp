@@ -40,6 +40,8 @@ typedef priority_queue<pdi, vector<pdi>, greater<pdi> > pq;
 #define FACE_Y 1
 #define FACE_Z 2
 
+#define MAX_DENOMINATOR 7
+
 #define DEBUG cout<<"Debug: "<<__LINE__<<endl
 
 D3 FACE_CENTER_TO_EDGE[3][4] = 
@@ -93,7 +95,7 @@ int gcd(int a, int b) {
 }
 vd constructMesh() {
   vd output;
-  for (int a = 2; a <= 9; a++) {
+  for (int a = 2; a <= MAX_DENOMINATOR; a++) {
     for (int b = 1; b <= a-1; b++) {
       if (gcd(a, b) > 1) {
         continue;
